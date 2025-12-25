@@ -58,7 +58,7 @@ Sistem secara otomatis mengkategorikan data berdasarkan jarak permukaan air ke s
 ---
 
 ## 📂 Struktur Proyek
-```text
+
 ├── .pio/               # Dependency PlatformIO
 ├── src/                # Folder Source Code
 │   └── main.cpp        # Firmware ESP32 (Logika AI & Manual Override)
