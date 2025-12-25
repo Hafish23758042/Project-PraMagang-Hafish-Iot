@@ -72,12 +72,12 @@ Sistem secara otomatis mengkategorikan data berdasarkan jarak permukaan air ke s
 ├── diagram.json        # Konfigurasi Sirkuit Virtual Wokwi
 └── README.md           # Dokumentasi Proyek
 
-![Demo 1](assets/DOKUMENTASI%20DEMO%20PROJECT%201.png)
+## 📸 Dokumentasi Project
 
-![Demo 2](assets/DOKUMENTASI%20DEMO%20PROJECT%202.png)
-
-![Demo 3](assets/DOKUMENTASI%20DEMO%20PROJECT%203.png)
-
-![Demo 4](assets/DOKUMENTASI%20DEMO%20PROJECT%204.png)
-
-![Demo 5](assets/DOKUMENTASI%20DEMO%20PROJECT%205.png)
+<p align="center">
+  <img src="assets/DOKUMENTASI DEMO PROJECT 1.png" width="90%" alt="Demo 1">
+  <img src="assets/DOKUMENTASI DEMO PROJECT 2.png" width="90%" alt="Demo 2">
+  <img src="assets/DOKUMENTASI DEMO PROJECT 3.png" width="90%" alt="Demo 3">
+  <img src="assets/DOKUMENTASI DEMO PROJECT 4.png" width="90%" alt="Demo 4">
+  <img src="assets/DOKUMENTASI DEMO PROJECT 5.png" width="90%" alt="Demo 5">
+</p>
