@@ -1,16 +1,25 @@
 {
   "version": 1,
-  "author": "Anonymous user",
+  "author": "Hafish",
   "editor": "wokwi",
   "parts": [
     { "type": "board-esp32-devkit-v1", "id": "esp", "top": 0, "left": 0, "attrs": {} },
-    { "type": "wokwi-hc-sr04", "id": "ultrasonic", "top": -150, "left": 100, "attrs": {} }
+    { "type": "wokwi-hc-sr04", "id": "ultrasonic", "top": -120, "left": 120, "attrs": {} },
+    { "type": "wokwi-relay-module", "id": "relay", "top": 100, "left": 180, "attrs": {} },
+    { "type": "wokwi-led", "id": "led_pump", "top": 200, "left": 300, "attrs": { "color": "blue", "label": "POMPA" } }
   ],
   "connections": [
     [ "esp:GND.1", "ultrasonic:GND", "black", [ "v0" ] ],
-    [ "esp:3V3", "ultrasonic:VCC", "red", [ "v0" ] ],
+    [ "esp:VIN", "ultrasonic:VCC", "red", [ "v0" ] ],
     [ "esp:D5", "ultrasonic:TRIG", "blue", [ "v0" ] ],
-    [ "esp:D18", "ultrasonic:ECHO", "green", [ "v0" ] ]
-  ],
-  "dependencies": {}
+    [ "esp:D18", "ultrasonic:ECHO", "green", [ "v0" ] ],
+    
+    [ "esp:GND.2", "relay:GND", "black", [ "v0" ] ],
+    [ "esp:D19", "relay:IN", "orange", [ "v0" ] ],
+    [ "esp:VIN", "relay:VCC", "red", [ "v0" ] ],
+    
+    [ "relay:COM", "esp:3V3", "red", [ "v10", "h-40" ] ],
+    [ "relay:NO", "led_pump:A", "blue", [ "v0" ] ], 
+    [ "led_pump:K", "esp:GND.2", "black", [ "v0" ] ]
+  ]
 }

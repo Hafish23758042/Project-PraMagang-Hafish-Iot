@@ -1,105 +1,105 @@
 #include <WiFi.h>
 #include <PubSubClient.h>
+#include <ArduinoJson.h>
 
-// Konfigurasi WiFi
 const char* ssid = "Wokwi-GUEST";
 const char* password = "";
-
-// Konfigurasi MQTT
 const char* mqtt_server = "broker.hivemq.com";
-const char* topic = "iot/flood/level";
 
-// Pin Sensor Ultrasonik
-const int trigPin = 5;
-const int echoPin = 18;
+#define PIN_RELAY 19 
+#define PIN_TRIG 5
+#define PIN_ECHO 18
 
 WiFiClient espClient;
 PubSubClient client(espClient);
 
-void setup_wifi() {
-  delay(10);
-  Serial.println("\n--- WiFi Setup ---");
-  Serial.print("Connecting to ");
-  Serial.println(ssid);
+bool isManual = false;
+unsigned long manualStartTime = 0;
+const long manualDuration = 10000; 
 
-  WiFi.begin(ssid, password);
+void callback(char* topic, byte* payload, unsigned int length) {
+  String message = "";
+  for (int i = 0; i < length; i++) { message += (char)payload[i]; }
 
-  while (WiFi.status() != WL_CONNECTED) {
-    delay(500);
-    Serial.print(".");
-  }
-
-  Serial.println("\nWiFi Connected!");
-}
-
-void reconnect() {
-  while (!client.connected()) {
-    Serial.print("Attempting MQTT connection...");
-    // Gunakan ID unik agar tidak bentrok dengan user lain di broker publik
-    String clientId = "ESP32Client-" + String(random(0xffff), HEX);
-    if (client.connect(clientId.c_str())) {
-      Serial.println("Connected to Broker");
-    } else {
-      Serial.print("Failed, rc=");
-      Serial.print(client.state());
-      Serial.println(" try again in 5 seconds");
-      delay(5000);
-    }
+  if (message == "ON") {
+    isManual = true;
+    manualStartTime = millis();
+    digitalWrite(PIN_RELAY, HIGH); // SEKARANG: HIGH = NYALA
+  } else if (message == "OFF") {
+    isManual = true;
+    manualStartTime = millis();
+    digitalWrite(PIN_RELAY, LOW);  // SEKARANG: LOW = MATI
   }
 }
 
 void setup() {
   Serial.begin(115200);
+  pinMode(PIN_RELAY, OUTPUT);
+  digitalWrite(PIN_RELAY, LOW); // Mulai dalam keadaan MATI
   
-  pinMode(trigPin, OUTPUT);
-  pinMode(echoPin, INPUT);
+  pinMode(PIN_TRIG, OUTPUT);
+  pinMode(PIN_ECHO, INPUT);
 
-  setup_wifi();
+  WiFi.begin(ssid, password);
+  while (WiFi.status() != WL_CONNECTED) { delay(500); Serial.print("."); }
+  
   client.setServer(mqtt_server, 1883);
+  client.setCallback(callback);
 }
 
-float getDistance() {
-  digitalWrite(trigPin, LOW);
-  delayMicroseconds(2);
-  
-  digitalWrite(trigPin, HIGH);
-  delayMicroseconds(10);
-  digitalWrite(trigPin, LOW);
-
-  long duration = pulseIn(echoPin, HIGH);
-  
-  // Menghitung jarak (cm)
-  float distance = duration * 0.034 / 2;
-  return distance;
+void reconnect() {
+  while (!client.connected()) {
+    if (client.connect("ESP32_Hafish_River_Final_V2")) {
+      client.subscribe("sungai/kontrol");
+    } else {
+      delay(5000);
+    }
+  }
 }
 
 void loop() {
-  if (!client.connected()) {
-    reconnect();
-  }
+  if (!client.connected()) reconnect();
   client.loop();
 
-  // Membaca nilai dari sensor di Wokwi
-  float currentDistance = getDistance();
+  if (isManual && (millis() - manualStartTime > manualDuration)) {
+    isManual = false;
+  }
+
+  digitalWrite(PIN_TRIG, LOW);
+  delayMicroseconds(2);
+  digitalWrite(PIN_TRIG, HIGH);
+  delayMicroseconds(10);
+  digitalWrite(PIN_TRIG, LOW);
+  float duration = pulseIn(PIN_ECHO, HIGH);
+  float distance = (duration * 0.034) / 2;
+
+  String statusAI = "AMAN";
+  if (!isManual) {
+    if (distance > 150) { // Kondisi BANJIR (jarak sensor jauh)
+      statusAI = "BAHAYA";
+      digitalWrite(PIN_RELAY, HIGH); // NYALA
+    } else {
+      statusAI = "AMAN";
+      digitalWrite(PIN_RELAY, LOW);  // MATI
+    }
+  } else {
+    statusAI = "MANUAL";
+  }
+
+  // --- SINKRONISASI TOTAL ---
+  // Jika PIN bernilai HIGH, dashboard WAJIB lapor ON
+  String pumpStatus = (digitalRead(PIN_RELAY) == HIGH) ? "ON" : "OFF";
+
+  StaticJsonDocument<200> doc;
+  doc["level"] = distance;
+  doc["status"] = statusAI;
+  doc["pump"] = pumpStatus;
+
+  char buffer[256];
+  serializeJson(doc, buffer);
+  client.publish("sungai/data", buffer);
   
-  // Karena Anda ingin data SEARAH dengan slider:
-  // Kita langsung gunakan nilai distance sebagai tinggi air
-  float waterLevel = currentDistance; 
-
-  // Proteksi jika sensor membaca error (0 atau terlalu jauh)
-  if (waterLevel < 0) waterLevel = 0;
-
-  // Konversi float ke string untuk MQTT
-  char msg[16];
-  dtostrf(waterLevel, 1, 2, msg); 
-
-  // Output ke Serial Monitor
-  Serial.print("Nilai Slider (Tinggi Air): ");
-  Serial.print(msg);
-  Serial.println(" cm");
-
-  // Kirim ke Broker MQTT
-  client.publish(topic, msg);
-
-  delay(2000); 
+  Serial.print("Dist: "); Serial.print(distance);
+  Serial.print(" | Pump: "); Serial.println(pumpStatus);
+  delay(2000);
 }
