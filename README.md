@@ -58,7 +58,7 @@ Sistem secara otomatis mengkategorikan data berdasarkan jarak permukaan air ke s
 ---
 
 ## 📂 Struktur Proyek
-
+```text
 ├── .pio/               # Dependency PlatformIO
 ├── src/                # Folder Source Code
 │   └── main.cpp        # Firmware ESP32 (Logika AI & Manual Override)
@@ -71,6 +71,7 @@ Sistem secara otomatis mengkategorikan data berdasarkan jarak permukaan air ke s
 │   └── script.js       # Vue.js Logic & MQTT Client
 ├── diagram.json        # Konfigurasi Sirkuit Virtual Wokwi
 └── README.md           # Dokumentasi Proyek
+```
 
 ## 📸 Dokumentasi Project
 
