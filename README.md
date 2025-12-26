@@ -61,11 +61,19 @@ Sistem secara otomatis mengkategorikan data berdasarkan jarak permukaan air ke s
 ├── src/                # Folder Source Code
 │   └── main.cpp        # Firmware ESP32 (Logika AI & Manual Override)
 ├── backend/
+<<<<<<< HEAD
 │   └── app.py          # Flask API, MQTT Bridge, & Database Handler
 ├── web/                # Frontend Dashboard
 │   ├── index.html      # UI Dashboard (Vue.js & SweetAlert2)
 │   ├── style.css       # Mobile Responsive Style
 │   └── script.js       # Vue.js Logic & Dialog Handling
+=======
+│   ├── app.py          # Flask API & MQTT Bridge
+├── web/                # Frontend Dashboard
+│   ├── index.html      # UI Dashboard
+│   ├── style.css       # Style Glassmorphism
+│   └── script.js       # Vue.js Logic & MQTT Client
+>>>>>>> c42a8df0d90a51fdc919c253e8c005a9e85e5b77
 ├── database.db         # SQLite Database (Log Histori)
 ├── diagram.json        # Konfigurasi Sirkuit Virtual Wokwi
 └── README.md           # Dokumentasi Proyek
