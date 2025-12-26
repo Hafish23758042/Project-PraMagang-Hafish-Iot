@@ -1,22 +1,26 @@
 const app = Vue.createApp({
     data() {
-        return { logs: [], prediction: "", chart: null }
+        return { logs: [], chart: null }
     },
     methods: {
         async updateData() {
             try {
-                const res = await fetch(`http://localhost:5000/api/data?t=${new Date().getTime()}`);
+                const res = await fetch(`/api/data?t=${new Date().getTime()}`);
                 const data = await res.json();
                 this.logs = data.logs || [];
-                this.renderChart();
-            } catch (e) { console.error("Koneksi Flask mati"); }
+                if (this.logs.length > 0) {
+                    this.renderChart();
+                }
+            } catch (e) { 
+                console.error("Flask Offline"); 
+            }
         },
         renderChart() {
-            const canvas = document.getElementById('myChart');
-            if (!canvas || this.logs.length === 0) return;
-            const ctx = canvas.getContext('2d');
+            const ctx = document.getElementById('myChart').getContext('2d');
             if (this.chart) this.chart.destroy();
+            
             const d = [...this.logs].reverse();
+            
             this.chart = new Chart(ctx, {
                 type: 'line',
                 data: {
@@ -25,20 +29,71 @@ const app = Vue.createApp({
                         label: 'Level Air (cm)',
                         data: d.map(l => l.level),
                         borderColor: '#00d4ff',
-                        backgroundColor: 'rgba(0, 212, 255, 0.1)',
-                        fill: true, tension: 0.4
+                        tension: 0.4,
+                        fill: true,
+                        backgroundColor: 'rgba(0, 212, 255, 0.1)'
                     }]
                 },
-                options: { responsive: true, maintainAspectRatio: false, animation: false }
+                options: { 
+                    responsive: true, 
+                    maintainAspectRatio: false, 
+                    animation: false,
+                    scales: {
+                        y: {
+                            min: 0,
+                            max: 400,
+                            ticks: { stepSize: 50, color: '#94a3b8' },
+                            grid: { color: 'rgba(255, 255, 255, 0.1)' }
+                        },
+                        x: { 
+                            ticks: { color: '#94a3b8' },
+                            grid: { display: false } 
+                        }
+                    },
+                    plugins: {
+                        legend: { display: false }
+                    }
+                }
             });
         },
         async sendCmd(cmd) {
-            await fetch('http://localhost:5000/api/control', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ command: cmd })
+            // Notifikasi Konfirmasi Modern
+            Swal.fire({
+                title: 'Konfirmasi',
+                text: `Apakah Anda yakin ingin mematikan/menyalakan pompa (PAKSA ${cmd})?`,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: cmd === 'ON' ? '#28a745' : '#ff4d4d',
+                cancelButtonColor: '#6e7881',
+                confirmButtonText: 'Iya, Lanjutkan!',
+                cancelButtonText: 'Tidak',
+                background: '#1e293b',
+                color: '#fff'
+            }).then(async (result) => {
+                if (result.isConfirmed) {
+                    try {
+                        await fetch('/api/control', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ command: cmd })
+                        });
+                        
+                        Swal.fire({
+                            title: 'Berhasil!',
+                            text: `Perintah ${cmd} terkirim.`,
+                            icon: 'success',
+                            background: '#1e293b',
+                            color: '#fff',
+                            timer: 1500,
+                            showConfirmButton: false
+                        });
+                        
+                        this.updateData(); // Langsung perbarui data
+                    } catch (e) {
+                        Swal.fire('Gagal!', 'Terjadi kesalahan pada server.', 'error');
+                    }
+                }
             });
-            alert("Perintah Manual " + cmd + " Terkirim! (Berlaku 10 detik)");
         }
     },
     mounted() {

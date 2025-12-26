@@ -5,66 +5,66 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Smart River Dashboard</title>
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
     <div id="app">
-        <h1>🌊 River Monitoring</h1>
+        <h1>🌊 Smart River Monitoring & Early Warning System</h1>
         <p class="subtitle">Real-time Flood Early Warning System</p>
 
-        <div v-if="prediction && prediction.includes('Bahaya')" class="alert-banner">
-            🚨 PERINGATAN KRITIS: {{ prediction }}
+        <div v-if="logs.length > 0 && logs[0].status.toLowerCase() === 'bahaya'" class="alert-banner">
+            🚨 PERINGATAN: STATUS SUNGAI BAHAYA!
         </div>
 
         <div class="grid">
             <div class="card">
-                <h3 style="margin-top:0">🕹️ Manual Control</h3>
-                <p style="font-size: 0.9rem; color: #94a3b8">Override sistem otomatis secara langsung via MQTT.</p>
+                <h3 style="margin:0 0 10px 0; font-size: 1.1rem;">🕹️ Manual Control</h3>
                 <div class="button-group">
                     <button @click="sendCmd('ON')" class="btn-on">PAKSA ON</button>
                     <button @click="sendCmd('OFF')" class="btn-off">PAKSA OFF</button>
                 </div>
-                <hr style="border: 0.5px solid rgba(255,255,255,0.1); margin: 1.5rem 0;">
-                <h4>Status AI: <span :class="logs[0]?.status" class="status-badge">{{ logs[0]?.status || '...' }}</span></h4>
+                <hr style="border: 0.5px solid rgba(255,255,255,0.1); margin: 1.2rem 0;">
+                <h4 style="margin:0">Status AI: <span :class="logs[0]?.status" class="status-badge">{{ logs[0]?.status || '...' }}</span></h4>
             </div>
 
-            <div class="card" style="min-height: 300px;">
-                <h3 style="margin-top:0">📊 Trend Ketinggian Air</h3>
-                <div style="position: relative; height: 250px; width: 100%;">
+            <div class="card">
+                <h3 style="margin:0 0 10px 0; font-size: 1.1rem;">📊 Trend Ketinggian Air</h3>
+                <div class="chart-container">
                     <canvas id="myChart"></canvas>
                 </div>
             </div>
         </div>
 
         <div class="card">
-            <h3 style="margin-top:0">📑 Riwayat Log (SQLite)</h3>
+            <h3 style="margin:0 0 10px 0; font-size: 1.1rem;">📑 Riwayat Log</h3>
             <div class="table-container">
                 <table>
                     <thead>
                         <tr>
                             <th>Waktu</th>
-                            <th>Ketinggian (cm)</th>
-                            <th>Status AI</th>
+                            <th>Level</th>
+                            <th>Status</th>
                             <th>Pompa</th>
                         </tr>
                     </thead>
                     <tbody>
                         <tr v-for="log in logs" :key="log.time">
                             <td>{{ log.time }}</td>
-                            <td style="font-family: monospace; font-weight: bold;">{{ log.level }} cm</td>
+                            <td><b>{{ log.level }} cm</b></td>
                             <td><span :class="log.status" class="status-badge">{{ log.status }}</span></td>
-                            <td>{{ log.pump }}</td>
-                        </tr>
-                        <tr v-if="logs.length === 0">
-                            <td colspan="4" style="text-align: center; color: #94a3b8;">Menunggu data dari sensor...</td>
+                            <td>
+                                <span :class="log.pump === 'ON' ? 'text-on' : 'text-off'">
+                                    {{ log.pump }}
+                                </span>
+                            </td>
                         </tr>
                     </tbody>
                 </table>
             </div>
         </div>
     </div>
-
     <script src="script.js"></script>
 </body>
 </html>
