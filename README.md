@@ -64,11 +64,11 @@ Sistem secara otomatis mengkategorikan data berdasarkan jarak permukaan air ke s
 │   └── main.cpp        # Firmware ESP32 (Logika AI & Manual Override)
 ├── backend/
 │   ├── app.py          # Flask API & MQTT Bridge
-│   └── database.db     # SQLite Database (Log Histori)
 ├── web/                # Frontend Dashboard
 │   ├── index.html      # UI Dashboard
 │   ├── style.css       # Style Glassmorphism
 │   └── script.js       # Vue.js Logic & MQTT Client
+├── database.db         # SQLite Database (Log Histori)
 ├── diagram.json        # Konfigurasi Sirkuit Virtual Wokwi
 └── README.md           # Dokumentasi Proyek
 ```
